@@ -62,6 +62,8 @@ Critério de aceitação do documento. Um doador não consegue acessar telas ou 
 | CT-PER-02 | RF-005 |  |  |  |
 | CT-PER-03 | RF-005 | PATCH /api/v1/usuarios/me | Sucesso | Perfil do usuário é atualizado. Retorna 200 com a mensagem "Perfil atualizado com sucesso." e o objeto data com os dados atualizados |
 | CT-PER-04 | RF-005 | PATCH /api/v1/usuarios/me | Erro | Atualização do perfil com o nome vazio. Retorna 422 com a mensagem "Nome não pode ser vazio." |
+| CT-PER-05 | RF-005 | PATCH /api/v1/usuarios/me | Erro | Atualização da senha com menos de 6 caracteres. Retorna 422 com a mensagem "Senha deve ter ao menos 6 caracteres." |
+| CT-PER-06 | RF-005 | PATCH /api/v1/usuarios/me | Erro | Atualização da senha informando a senha atual errada. Retorna 422 com a mensagem "Senha atual incorreta." |
 
 ## RNF-003 Autorização no servidor
 
@@ -69,10 +71,10 @@ Critério de aceitação do documento. Chamadas diretas à API sem permissão re
 
 | ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
 | --- | --- | --- | --- | --- |
-| CT-PER-05 | RNF-003 | GET /api/v1/usuarios/me | Erro | Consulta do próprio perfil sem estar autenticado, sem enviar token. Retorna 401 (texto da mensagem a confirmar, o documento não define) |
-| CT-PER-06 | RNF-003 |  |  |  |
-| CT-PER-07 | RNF-003 |  |  |  |
+| CT-PER-07 | RNF-003 | GET /api/v1/usuarios/me | Erro | Consulta do próprio perfil sem estar autenticado, sem enviar token. Retorna 401 (texto da mensagem a confirmar, o documento não define) |
 | CT-PER-08 | RNF-003 |  |  |  |
+| CT-PER-09 | RNF-003 |  |  |  |
+| CT-PER-10 | RNF-003 |  |  |  |
 
 ---
 
