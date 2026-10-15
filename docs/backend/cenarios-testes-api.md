@@ -58,8 +58,8 @@ Critério de aceitação do documento. Um doador não consegue acessar telas ou 
 
 | ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
 | --- | --- | --- | --- | --- |
-| CT-PER-01 | RF-005 |  |  |  |
-| CT-PER-02 | RF-005 |  |  |  |
+| CT-PER-01 | RF-005 | GET /api/v1/usuarios/me | Sucesso | Perfil do usuário autenticado. Retorna 200 com o objeto data do cadastro do doador |
+| CT-PER-02 | RF-005 | GET /api/v1/usuarios/me | Erro | Consulta do próprio perfil sem estar autenticado, sem enviar token. Retorna 401 (texto da mensagem a confirmar, o documento não define) |
 | CT-PER-03 | RF-005 |  |  |  |
 | CT-PER-04 | RF-005 |  |  |  |
 
@@ -69,8 +69,7 @@ Critério de aceitação do documento. Chamadas diretas à API sem permissão re
 
 | ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
 | --- | --- | --- | --- | --- |
-| CT-PER-05 | RNF-003 |  |  |  |
-| CT-PER-06 | RNF-003 |  |  |  |
+| CT-PER-05 | RNF-003 | GET /api/v1/usuarios/me | Erro | Consulta do próprio perfil sem estar autenticado, sem enviar token. Retorna 401 (texto da mensagem a confirmar, o documento não define) || CT-PER-06 | RNF-003 |
 | CT-PER-07 | RNF-003 |  |  |  |
 | CT-PER-08 | RNF-003 |  |  |  |
 
@@ -79,5 +78,5 @@ Critério de aceitação do documento. Chamadas diretas à API sem permissão re
 ## Dúvidas para o Backend deste bloco
 
 1. RF001 -> CT-AUT-07 | Confirmar se é obrigatório que o cliente informe o documento para poder criar a conta
-2. 
+2. RNF003 -> CT-PER-05 | Confirmar qual é o corpo da resposta 401 quando não há token, pois o documento só cita o código
 3.
