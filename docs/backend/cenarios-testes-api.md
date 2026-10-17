@@ -17,7 +17,7 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RF-010 | Criação de campanha | CT-CAM-01 a CT-CAM-19 |
 | RF-011 | Edição de campanha | CT-CAM-20 a CT-CAM-34 |
 | RF-012 | Publicação de campanha | CT-CAM-35 a CT-CAM-42 |
-| RF-013 | Encerramento de campanha | CT-CAM-__ a __ |
+| RF-013 | Encerramento de campanha | CT-CAM-43 a CT-CAM-63 |
 | RF-014 | Listagem de campanhas disponíveis | CT-CAM-__ a __ |
 | RF-015 | Detalhes da campanha | CT-CAM-__ a __ |
 | RF-016 | Busca de campanhas | CT-CAM-__ a __ |
@@ -138,7 +138,7 @@ Rotas cobertas. POST /api/v1/campanhas (acesso ENTIDADE com status APROVADA), ma
 | CT-CAM-05 | RF-010 | POST /api/v1/campanhas | Sucesso | Criação com data de início no passado e data de encerramento no futuro. Retorna 201 (a confirmar, o documento não define regra para a data de início no passado) |
 | CT-CAM-06 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem enviar token. Retorna 401 com a mensagem "Não autenticado." |
 | CT-CAM-07 | RF-010 | POST /api/v1/campanhas | Erro | Doador autenticado tenta criar campanha. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." |
-| CT-CAM-08 | RF-010 | POST /api/v1/campanhas | Erro | Administrador autenticado tenta criar campanha. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." (a confirmar, sugestão pela mensagem do 403 de perfil na rota 15) |
+| CT-CAM-08 | RF-010 | POST /api/v1/campanhas | Erro | Administrador autenticado tenta criar campanha. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." (a confirmar) |
 | CT-CAM-09 | RF-010 | POST /api/v1/campanhas | Erro | Entidade que ainda não foi aprovada, por exemplo com status PENDENTE, tenta criar campanha. Retorna 403 com a mensagem "Somente entidades aprovadas podem criar campanhas." |
 | CT-CAM-10 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem título. Retorna 422 com a mensagem "Título é obrigatório." |
 | CT-CAM-11 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem descrição. Retorna 422 com a mensagem "Descrição é obrigatória." |
@@ -162,17 +162,17 @@ Rota principal. PATCH /api/v1/campanhas/{id} (acesso entidade dona), marcada com
 | CT-CAM-20 | RF-011 | PATCH /api/v1/campanhas/{id} | Sucesso | Entidade dona edita título, descrição, meta e datas de uma campanha ATIVA com dados válidos. Retorna 200 com a mensagem "Campanha atualizada com sucesso." e os dados da campanha com os novos valores |
 | CT-CAM-21 | RF-011 | PATCH /api/v1/campanhas/{id} | Sucesso | Entidade dona edita apenas o título. Retorna 200 e os demais campos continuam com o valor anterior, pois os campos são opcionais |
 | CT-CAM-22 | RF-011 | PATCH /api/v1/campanhas/{id} e depois GET /api/v1/campanhas/{id} | Sucesso | Campanha editada e consultada em seguida. A edição retorna 200 e o detalhe retorna 200 com os valores alterados |
-| CT-CAM-23 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição sem enviar token. Retorna 401 com a mensagem "Não autenticado." (a confirmar, sugestão pelo 401 das rotas 9 e 15) |
+| CT-CAM-23 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição sem enviar token. Retorna 401 com a mensagem "Não autenticado." (a confirmar) |
 | CT-CAM-24 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Doador autenticado tenta editar uma campanha. Retorna 403 com a mensagem "Sem permissão." |
 | CT-CAM-25 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Entidade tenta editar campanha de outra entidade. Retorna 403 com a mensagem "Sem permissão." (a confirmar se é 403 ou 404) |
 | CT-CAM-26 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Administrador tenta editar uma campanha, pois o acesso é só da entidade dona. Retorna 403 com a mensagem "Sem permissão." (a confirmar) |
-| CT-CAM-27 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição de campanha que não existe. Retorna 404 com a mensagem "Campanha não encontrada." (a confirmar, sugestão pelo 404 da rota 14) |
+| CT-CAM-27 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição de campanha que não existe. Retorna 404 com a mensagem "Campanha não encontrada." (a confirmar) |
 | CT-CAM-28 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Entidade dona edita campanha ENCERRADA. Retorna 409 com a mensagem "Somente campanhas ativas podem ser editadas." |
 | CT-CAM-29 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Entidade dona edita campanha DESATIVADA. Retorna 409 com a mensagem "Somente campanhas ativas podem ser editadas." |
 | CT-CAM-30 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com o título vazio. Retorna 422 com a mensagem "Título não pode ser vazio." |
-| CT-CAM-31 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com a descrição vazia. Retorna 422 com a mensagem "Descrição não pode ser vazia." (a confirmar, sugestão por analogia com a mensagem do título e com a rota 9, pois a rota 16 mostra só a do título) |
-| CT-CAM-32 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com meta igual a zero. Retorna 422 com a mensagem "Meta deve ser maior que zero." (a confirmar, sugestão pela mensagem da criação na rota 15) |
-| CT-CAM-33 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com data de encerramento anterior à data de início. Retorna 422 com a mensagem "Data de encerramento deve ser igual ou posterior à data de início." (a confirmar, sugestão pela mensagem da criação na rota 15) |
+| CT-CAM-31 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com a descrição vazia. Retorna 422 com a mensagem "Descrição não pode ser vazia." (a confirmar) |
+| CT-CAM-32 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com meta igual a zero. Retorna 422 com a mensagem "Meta deve ser maior que zero." (a confirmar) |
+| CT-CAM-33 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com data de encerramento anterior à data de início. Retorna 422 com a mensagem "Data de encerramento deve ser igual ou posterior à data de início." (a confirmar) |
 | CT-CAM-34 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
 
 ## RF-012 Publicação de campanha
@@ -191,6 +191,36 @@ Rotas cobertas. O `rotas-api.md` não tem rota de publicar nem status "rascunho"
 | CT-CAM-40 | RF-012 | GET /api/v1/campanhas/{id} | Erro | Visitante consulta o detalhe de campanha DESATIVADA. Retorna 404 com a mensagem "Campanha não encontrada." |
 | CT-CAM-41 | RF-012 | GET /api/v1/campanhas/{id} | Erro | Visitante consulta o detalhe de campanha de entidade não aprovada. Retorna 404 com a mensagem "Campanha não encontrada." |
 | CT-CAM-42 | RF-012 | GET /api/v1/campanhas | Erro | Campanha em rascunho não consta na lista pública. Retorna 200 sem a campanha (a confirmar, o status rascunho não existe no documento) |
+
+## RF-013 Encerramento de campanha
+
+Critério de aceitação. Após o encerramento, a campanha exibe status "encerrada" e a opção de doar fica indisponível.
+
+Rota principal. PATCH /api/v1/campanhas/{id}/status (acesso entidade dona, somente para ENCERRADA, ou ADMIN), marcada como RF13 e RF15 no `rotas-api.md`. Esta rota também permite ao administrador desativar e reativar campanha, e os dois casos estão cobertos aqui. Os cenários que verificam o detalhe e a doação usam GET /api/v1/campanhas/{id} e POST /api/v1/doacoes apenas como consulta. A cobertura funcional deles fica nos cenários do RF-015 e do módulo de doações.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-43 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Sucesso | Entidade dona encerra campanha ATIVA. Retorna 200 com a mensagem "Campanha encerrada." e a campanha com status ENCERRADA |
+| CT-CAM-44 | RF-013 | PATCH /api/v1/campanhas/{id}/status e depois GET /api/v1/campanhas/{id} | Sucesso | Campanha encerrada pela entidade dona e consultada em seguida. O encerramento retorna 200 e o detalhe retorna 200 com status ENCERRADA e recebendoDoacoes false |
+| CT-CAM-45 | RF-013 | PATCH /api/v1/campanhas/{id}/status e depois POST /api/v1/doacoes | Sucesso | Campanha encerrada não recebe doação. O encerramento retorna 200 e a doação para a campanha retorna 409 com a mensagem "Esta campanha não está recebendo doações." |
+| CT-CAM-46 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Sucesso | Administrador encerra campanha ATIVA. Retorna 200 com a mensagem "Campanha encerrada." e a campanha com status ENCERRADA |
+| CT-CAM-47 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Sucesso | Administrador encerra campanha DESATIVADA. Retorna 200 com a mensagem "Campanha encerrada." e a campanha com status ENCERRADA |
+| CT-CAM-48 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Sucesso | Administrador desativa campanha ATIVA informando o motivo. Retorna 200 com a mensagem "Campanha desativada." e a campanha com status DESATIVADA e o motivoDesativacao informado |
+| CT-CAM-49 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Sucesso | Administrador reativa campanha DESATIVADA. Retorna 200 com a mensagem "Campanha reativada." e a campanha com status ATIVA |
+| CT-CAM-50 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração de status sem enviar token. Retorna 401 com a mensagem "Não autenticado." (a confirmar) |
+| CT-CAM-51 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Doador autenticado tenta encerrar uma campanha. Retorna 403 com a mensagem "Sem permissão." |
+| CT-CAM-52 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Entidade tenta encerrar campanha de outra entidade. Retorna 403 com a mensagem "Sem permissão." |
+| CT-CAM-53 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Entidade dona pede o status DESATIVADA, operação restrita ao administrador. Retorna 403 com a mensagem "Sem permissão." |
+| CT-CAM-54 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Entidade dona pede o status ATIVA para uma campanha DESATIVADA, operação restrita ao administrador. Retorna 403 com a mensagem "Sem permissão." (a confirmar se não retorna o 409 "Campanha desativada pelo administrador.") |
+| CT-CAM-55 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Entidade dona tenta encerrar campanha DESATIVADA. Retorna 409 com a mensagem "Campanha desativada pelo administrador." (a confirmar, o documento não diz em que caso essa mensagem é usada) |
+| CT-CAM-56 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Entidade dona tenta encerrar campanha que já está ENCERRADA. Retorna 409 com a mensagem "A campanha já está com este status." |
+| CT-CAM-57 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Administrador tenta reativar campanha ENCERRADA. Retorna 409 com a mensagem "Campanha encerrada não pode ser alterada." |
+| CT-CAM-58 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Administrador desativa campanha que já está DESATIVADA. Retorna 409 com a mensagem "A campanha já está com este status." |
+| CT-CAM-59 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Administrador desativa campanha sem informar o motivo. Retorna 422 com a mensagem "Motivo da desativação é obrigatório." |
+| CT-CAM-60 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração com status fora dos valores permitidos. Retorna 422 com a mensagem "Status inválido. Use: ATIVA, ENCERRADA, DESATIVADA" |
+| CT-CAM-61 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração sem enviar o status. Retorna 422 com a mensagem "Status inválido. Use: ATIVA, ENCERRADA, DESATIVADA" |
+| CT-CAM-62 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração de status de campanha que não existe. Retorna 404 com a mensagem "Campanha não encontrada." (a confirmar) |
+| CT-CAM-63 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração de status com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
 
 ---
 
@@ -221,3 +251,6 @@ Rotas cobertas. O `rotas-api.md` não tem rota de publicar nem status "rascunho"
 | 21 | RF-012 | CT-CAM-35 a CT-CAM-42 | Divergência entre os documentos. O `requisitos.md` pede publicar campanha e tem o status rascunho, mas o `rotas-api.md` não tem rota de publicar nem esse status, e a campanha nasce ATIVA e visível. Confirmar se criar equivale a publicar ou se a rota e o status serão criados |
 | 22 | RF-012 | CT-CAM-37 | Se a rota de publicação for criada, confirmar método, rota, perfis com acesso, mensagem de sucesso e erros, para fechar o cenário |
 | 23 | RF-012 | CT-CAM-42 | Confirmar como o rascunho deve aparecer ao gestor da entidade dona, pois a rota 13 só prevê os status ATIVA, ENCERRADA e DESATIVADA |
+| 24 | RF-013 | CT-CAM-48 e CT-CAM-49 | Desativar e reativar campanha não têm requisito correspondente no `requisitos.md`, pois o RF-013 cobre só o encerramento. Confirmar a qual requisito esses dois casos pertencem, já que a rota 17 os cita como RF15 e a numeração difere entre os documentos |
+| 25 | RF-013 | CT-CAM-50 e CT-CAM-62 | Confirmar se a rota 17 também retorna 401 sem token e 404 para campanha inexistente, e com quais mensagens, pois o documento não lista esses dois códigos nessa rota |
+| 26 | RF-013 | CT-CAM-54 e CT-CAM-55 | Confirmar a ordem das regras e as mensagens. A entidade dona que pede ATIVA para campanha DESATIVADA recebe 403 ou 409. A mensagem "Campanha desativada pelo administrador." vale para qual caso |
