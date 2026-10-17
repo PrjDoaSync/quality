@@ -15,7 +15,7 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RF-005 | Tipos de usuário e permissões | CT-PER-01 a CT-PER-06 |
 | RNF-003 | Autorização no servidor | CT-PER-07 a CT-PER-10 |
 | RF-010 | Criação de campanha | CT-CAM-01 a CT-CAM-19 |
-| RF-011 | Edição de campanha | CT-CAM-__ a __ |
+| RF-011 | Edição de campanha | CT-CAM-20 a CT-CAM-34 |
 | RF-012 | Publicação de campanha | CT-CAM-__ a __ |
 | RF-013 | Encerramento de campanha | CT-CAM-__ a __ |
 | RF-014 | Listagem de campanhas disponíveis | CT-CAM-__ a __ |
@@ -138,7 +138,7 @@ Rotas cobertas. POST /api/v1/campanhas (acesso ENTIDADE com status APROVADA), ma
 | CT-CAM-05 | RF-010 | POST /api/v1/campanhas | Sucesso | Criação com data de início no passado e data de encerramento no futuro. Retorna 201 (a confirmar, o documento não define regra para a data de início no passado) |
 | CT-CAM-06 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem enviar token. Retorna 401 com a mensagem "Não autenticado." |
 | CT-CAM-07 | RF-010 | POST /api/v1/campanhas | Erro | Doador autenticado tenta criar campanha. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." |
-| CT-CAM-08 | RF-010 | POST /api/v1/campanhas | Erro | Administrador autenticado tenta criar campanha. Retorna 403 (a confirmar a mensagem, o documento cita só entidades) |
+| CT-CAM-08 | RF-010 | POST /api/v1/campanhas | Erro | Administrador autenticado tenta criar campanha. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." (a confirmar, sugestão pela mensagem do 403 de perfil na rota 15) |
 | CT-CAM-09 | RF-010 | POST /api/v1/campanhas | Erro | Entidade que ainda não foi aprovada, por exemplo com status PENDENTE, tenta criar campanha. Retorna 403 com a mensagem "Somente entidades aprovadas podem criar campanhas." |
 | CT-CAM-10 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem título. Retorna 422 com a mensagem "Título é obrigatório." |
 | CT-CAM-11 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem descrição. Retorna 422 com a mensagem "Descrição é obrigatória." |
@@ -150,6 +150,30 @@ Rotas cobertas. POST /api/v1/campanhas (acesso ENTIDADE com status APROVADA), ma
 | CT-CAM-17 | RF-010 | POST /api/v1/campanhas | Erro | Criação com data de encerramento no passado. Retorna 422 com a mensagem "Data de encerramento não pode estar no passado." |
 | CT-CAM-18 | RF-010 | POST /api/v1/campanhas | Erro | Criação com corpo vazio, sem nenhum campo. Retorna 422 com as mensagens de título, descrição, meta, data de início e data de encerramento (a confirmar se vêm juntas) |
 | CT-CAM-19 | RF-010 | POST /api/v1/campanhas | Erro | Criação com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
+
+## RF-011 Edição de campanha
+
+Critério de aceitação. As alterações salvas são refletidas na página de detalhes da campanha.
+
+Rota principal. PATCH /api/v1/campanhas/{id} (acesso entidade dona), marcada como Grupo 2 no `rotas-api.md`. O cenário que verifica o detalhe usa GET /api/v1/campanhas/{id} apenas para consultar. A cobertura funcional do detalhe fica nos cenários do RF-015.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-20 | RF-011 | PATCH /api/v1/campanhas/{id} | Sucesso | Entidade dona edita título, descrição, meta e datas de uma campanha ATIVA com dados válidos. Retorna 200 com a mensagem "Campanha atualizada com sucesso." e os dados da campanha com os novos valores |
+| CT-CAM-21 | RF-011 | PATCH /api/v1/campanhas/{id} | Sucesso | Entidade dona edita apenas o título. Retorna 200 e os demais campos continuam com o valor anterior, pois os campos são opcionais |
+| CT-CAM-22 | RF-011 | PATCH /api/v1/campanhas/{id} e depois GET /api/v1/campanhas/{id} | Sucesso | Campanha editada e consultada em seguida. A edição retorna 200 e o detalhe retorna 200 com os valores alterados |
+| CT-CAM-23 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição sem enviar token. Retorna 401 com a mensagem "Não autenticado." (a confirmar, sugestão pelo 401 das rotas 9 e 15) |
+| CT-CAM-24 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Doador autenticado tenta editar uma campanha. Retorna 403 com a mensagem "Sem permissão." |
+| CT-CAM-25 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Entidade tenta editar campanha de outra entidade. Retorna 403 com a mensagem "Sem permissão." (a confirmar se é 403 ou 404) |
+| CT-CAM-26 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Administrador tenta editar uma campanha, pois o acesso é só da entidade dona. Retorna 403 com a mensagem "Sem permissão." (a confirmar) |
+| CT-CAM-27 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição de campanha que não existe. Retorna 404 com a mensagem "Campanha não encontrada." (a confirmar, sugestão pelo 404 da rota 14) |
+| CT-CAM-28 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Entidade dona edita campanha ENCERRADA. Retorna 409 com a mensagem "Somente campanhas ativas podem ser editadas." |
+| CT-CAM-29 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Entidade dona edita campanha DESATIVADA. Retorna 409 com a mensagem "Somente campanhas ativas podem ser editadas." |
+| CT-CAM-30 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com o título vazio. Retorna 422 com a mensagem "Título não pode ser vazio." |
+| CT-CAM-31 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com a descrição vazia. Retorna 422 com a mensagem "Descrição não pode ser vazia." (a confirmar, sugestão por analogia com a mensagem do título e com a rota 9, pois a rota 16 mostra só a do título) |
+| CT-CAM-32 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com meta igual a zero. Retorna 422 com a mensagem "Meta deve ser maior que zero." (a confirmar, sugestão pela mensagem da criação na rota 15) |
+| CT-CAM-33 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com data de encerramento anterior à data de início. Retorna 422 com a mensagem "Data de encerramento deve ser igual ou posterior à data de início." (a confirmar, sugestão pela mensagem da criação na rota 15) |
+| CT-CAM-34 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
 
 ---
 
@@ -170,5 +194,10 @@ Rotas cobertas. POST /api/v1/campanhas (acesso ENTIDADE com status APROVADA), ma
 | 11 | RF-010 | CT-CAM-01 e CT-CAM-02 | Confirmar se o "objetivo" do `requisitos.md` corresponde ao campo metaValor e se a entidade beneficiada é sempre a do usuário autenticado, pois o `rotas-api.md` não recebe o identificador da entidade |
 | 12 | RF-010 | CT-CAM-03 | Confirmar qual rota alimenta o painel da entidade, pois o documento só tem a listagem pública com filtro por entidadeId |
 | 13 | RF-010 | CT-CAM-05 | Confirmar se a data de início no passado é aceita, pois o documento só define regra para a data de encerramento |
-| 14 | RF-010 | CT-CAM-08 | Confirmar qual é a mensagem do 403 quando o administrador tenta criar campanha, pois o documento cita só entidades |
+| 14 | RF-010 | CT-CAM-08 | Confirmar se a mensagem do 403 quando o administrador tenta criar campanha é a sugerida no cenário, pois o documento cita só entidades |
 | 15 | RF-010 | CT-CAM-18 | Confirmar se, com o corpo vazio, todas as mensagens de campo vêm juntas na mesma resposta |
+| 16 | RF-011 | CT-CAM-20 | A rota de edição aparece como Grupo 2 no `rotas-api.md`, sem número de RF. Confirmar que ela cobre o RF-011 e que só campanha ATIVA pode ser editada, já que o `requisitos.md` não tem status rascunho nesse fluxo |
+| 17 | RF-011 | CT-CAM-23 e CT-CAM-27 | Confirmar se o corpo do 401 sem token ("Não autenticado.") e do 404 de campanha inexistente ("Campanha não encontrada.") na edição são os sugeridos nos cenários, pois a rota 16 só cita o código |
+| 18 | RF-011 | CT-CAM-25 | Confirmar se a entidade que edita a campanha de outra recebe 403 ou 404 |
+| 19 | RF-011 | CT-CAM-26 | Confirmar se o administrador pode editar campanha, pois o acesso da rota é só da entidade dona |
+| 20 | RF-011 | CT-CAM-31 a CT-CAM-33 | Confirmar se as mensagens 422 de descrição vazia, meta inválida e datas inconsistentes na edição são as sugeridas nos cenários, pois a rota 16 só mostra a do título |
