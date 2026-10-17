@@ -20,7 +20,7 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RF-013 | Encerramento de campanha | CT-CAM-43 a CT-CAM-63 |
 | RF-014 | Listagem de campanhas disponíveis | CT-CAM-64 a CT-CAM-74 |
 | RF-015 | Detalhes da campanha | CT-CAM-75 a CT-CAM-87 |
-| RF-016 | Busca de campanhas | CT-CAM-__ a __ |
+| RF-016 | Busca de campanhas | CT-CAM-88 a CT-CAM-95 |
 | RF-017 | Filtros de campanhas | CT-CAM-__ a __ |
 
 ## Convenções
@@ -264,6 +264,23 @@ Rota principal. GET /api/v1/campanhas/{id} (acesso público), marcada como RF14 
 | CT-CAM-86 | RF-015 | GET /api/v1/campanhas/{id} | Erro | Entidade tenta consultar campanha DESATIVADA de outra entidade. Retorna 404 com a mensagem "Campanha não encontrada." |
 | CT-CAM-87 | RF-015 | GET /api/v1/campanhas/{id} | Erro | Consulta com id que não tem formato de UUID. Retorna 404 com a mensagem "Campanha não encontrada." (a confirmar) |
 
+## RF-016 Busca de campanhas
+
+Critério de aceitação. A busca retorna somente campanhas publicadas que contenham o termo informado.
+
+Rota principal. GET /api/v1/campanhas com o parâmetro busca (acesso público, token opcional), marcada como RF12 e RF14 no `rotas-api.md`. Nessa rota o parâmetro busca procura por trecho do título.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-88 | RF-016 | GET /api/v1/campanhas?busca={trecho} | Sucesso | Busca por um trecho do título. Retorna 200 só com as campanhas cujo título contém o trecho |
+| CT-CAM-89 | RF-016 | GET /api/v1/campanhas?busca={trecho} | Sucesso | Busca com o trecho em letras diferentes do título, por exemplo em maiúsculas. Retorna 200 com a campanha encontrada (a confirmar) |
+| CT-CAM-90 | RF-016 | GET /api/v1/campanhas?busca={trecho} | Sucesso | Busca por um trecho que não existe em nenhum título. Retorna 200 com data vazio e meta total 0 |
+| CT-CAM-91 | RF-016 | GET /api/v1/campanhas?busca={termo} | Sucesso | Busca por um termo que aparece só na descrição da campanha. Retorna 200 com a campanha (a confirmar, o `rotas-api.md` busca só no título) |
+| CT-CAM-92 | RF-016 | GET /api/v1/campanhas?busca={trecho}&page=1&limit=1 | Sucesso | Busca com paginação. Retorna 200 com uma campanha e meta com o total de campanhas encontradas |
+| CT-CAM-93 | RF-016 | GET /api/v1/campanhas?busca= | Sucesso | Busca com o parâmetro vazio. Retorna 200 com a lista completa de campanhas recebendo doações (a confirmar) |
+| CT-CAM-94 | RF-016 | GET /api/v1/campanhas?busca={trecho} | Erro | Campanha DESATIVADA ou ENCERRADA com o trecho no título não consta no resultado da busca do visitante. Retorna 200 sem a campanha |
+| CT-CAM-95 | RF-016 | GET /api/v1/campanhas?busca={termo} | Erro | Busca com caracteres especiais e texto de injeção, por exemplo uma aspa seguida de comando SQL. Retorna 200 sem erro e sem alterar dados (a confirmar) |
+
 ---
 
 ## Dúvidas para o Backend
@@ -274,31 +291,34 @@ Rota principal. GET /api/v1/campanhas/{id} (acesso público), marcada como RF14 
 | 2 | RF-001 | CT-AUT-14 | Confirmar se CPF é obrigatório para pessoa física, pois o documento mostra só a mensagem de CPF inválido |
 | 3 | RF-002 | CT-AUT-19 | Confirmar se gestor com entidade PENDENTE, REPROVADA ou INATIVA consegue fazer login |
 | 4 | RF-002 | CT-AUT-20 | Confirmar qual é o valor do campo tipo para o administrador |
-| 5 | RF-002 | CT-AUT-25 | Confirmar se, com e-mail e senha vazios, as duas mensagens vêm juntas na mesma resposta |
-| 6 | RNF-003 | CT-PER-07 e CT-PER-08 | Confirmar qual é o corpo da resposta 401 sem token e com token inválido, pois o documento só cita o código |
-| 7 | RF-005 | CT-PER-09 e CT-PER-10 | Confirmar qual é o corpo da resposta 403, pois o documento não define |
-| 8 | RF-005 | CT-PER-09 | Confirmar se o gestor que edita a entidade de outro recebe 403 ou 404 |
-| 9 | Geral | Todos | Confirmar a numeração dos requisitos, pois o `rotas-api.md` cita o login como RF03 e RF06 e o `requisitos.md` cita RF-002 |
-| 10 | RF-010 | CT-CAM-01 | Divergência entre os documentos. O `requisitos.md` pede status "rascunho" ao criar, mas o `rotas-api.md` cria a campanha como ATIVA. Confirmar qual vale |
+| 5 | RF-002 | CT-AUT-25 | Confirmar se, com e-mail e senha vazios, as duas mensagens vêm juntas na mesma resposta. Ver também a dúvida 15 |
+| 6 | RNF-003 | CT-PER-07 e CT-PER-08 | Confirmar qual é o corpo da resposta 401 sem token e com token inválido, pois o documento só cita o código. Ver também as dúvidas 17 e 25 |
+| 7 | RF-005 | CT-PER-09 e CT-PER-10 | Confirmar qual é o corpo da resposta 403, pois o documento não define. Ver também a dúvida 14 |
+| 8 | RF-005 | CT-PER-09 | Confirmar se o gestor que edita a entidade de outro recebe 403 ou 404. Ver também as dúvidas 18 e 32 |
+| 9 | Geral | Todos | Confirmar a numeração dos requisitos, pois o `rotas-api.md` cita o login como RF03 e RF06 e o `requisitos.md` cita RF-002. Ver também as dúvidas 16 e 24 |
+| 10 | RF-010 | CT-CAM-01 | Divergência entre os documentos. O `requisitos.md` pede status "rascunho" ao criar, mas o `rotas-api.md` cria a campanha como ATIVA. Confirmar qual vale. Ver também as dúvidas 16, 21 e 23 |
 | 11 | RF-010 | CT-CAM-01 e CT-CAM-02 | Confirmar se o "objetivo" do `requisitos.md` corresponde ao campo metaValor e se a entidade beneficiada é sempre a do usuário autenticado, pois o `rotas-api.md` não recebe o identificador da entidade |
 | 12 | RF-010 | CT-CAM-03 | Confirmar qual rota alimenta o painel da entidade, pois o documento só tem a listagem pública com filtro por entidadeId |
 | 13 | RF-010 | CT-CAM-05 | Confirmar se a data de início no passado é aceita, pois o documento só define regra para a data de encerramento |
-| 14 | RF-010 | CT-CAM-08 | Confirmar se a mensagem do 403 quando o administrador tenta criar campanha é a sugerida no cenário, pois o documento cita só entidades |
-| 15 | RF-010 | CT-CAM-18 | Confirmar se, com o corpo vazio, todas as mensagens de campo vêm juntas na mesma resposta |
-| 16 | RF-011 | CT-CAM-20 | A rota de edição aparece como Grupo 2 no `rotas-api.md`, sem número de RF. Confirmar que ela cobre o RF-011 e que só campanha ATIVA pode ser editada, já que o `requisitos.md` não tem status rascunho nesse fluxo |
-| 17 | RF-011 | CT-CAM-23 e CT-CAM-27 | Confirmar se o corpo do 401 sem token ("Não autenticado.") e do 404 de campanha inexistente ("Campanha não encontrada.") na edição são os sugeridos nos cenários, pois a rota 16 só cita o código |
-| 18 | RF-011 | CT-CAM-25 | Confirmar se a entidade que edita a campanha de outra recebe 403 ou 404 |
-| 19 | RF-011 | CT-CAM-26 | Confirmar se o administrador pode editar campanha, pois o acesso da rota é só da entidade dona |
+| 14 | RF-010 | CT-CAM-08 | Confirmar se a mensagem do 403 quando o administrador tenta criar campanha é a sugerida no cenário, pois o documento cita só entidades. Ver também as dúvidas 7 e 19 |
+| 15 | RF-010 | CT-CAM-18 | Confirmar se, com o corpo vazio, todas as mensagens de campo vêm juntas na mesma resposta. Ver também a dúvida 5 |
+| 16 | RF-011 | CT-CAM-20 | A rota de edição aparece como Grupo 2 no `rotas-api.md`, sem número de RF. Confirmar que ela cobre o RF-011 e que só campanha ATIVA pode ser editada, já que o `requisitos.md` não tem status rascunho nesse fluxo. Ver também as dúvidas 9 e 10 |
+| 17 | RF-011 | CT-CAM-23 e CT-CAM-27 | Confirmar se o corpo do 401 sem token ("Não autenticado.") e do 404 de campanha inexistente ("Campanha não encontrada.") na edição são os sugeridos nos cenários, pois a rota 16 só cita o código. Ver também as dúvidas 6 e 25 |
+| 18 | RF-011 | CT-CAM-25 | Confirmar se a entidade que edita a campanha de outra recebe 403 ou 404. Ver também a dúvida 8 |
+| 19 | RF-011 | CT-CAM-26 | Confirmar se o administrador pode editar campanha, pois o acesso da rota é só da entidade dona. Ver também a dúvida 14 |
 | 20 | RF-011 | CT-CAM-31 a CT-CAM-33 | Confirmar se as mensagens 422 de descrição vazia, meta inválida e datas inconsistentes na edição são as sugeridas nos cenários, pois a rota 16 só mostra a do título |
-| 21 | RF-012 | CT-CAM-35 a CT-CAM-42 | Divergência entre os documentos. O `requisitos.md` pede publicar campanha e tem o status rascunho, mas o `rotas-api.md` não tem rota de publicar nem esse status, e a campanha nasce ATIVA e visível. Confirmar se criar equivale a publicar ou se a rota e o status serão criados |
-| 22 | RF-012 | CT-CAM-37 | Se a rota de publicação for criada, confirmar método, rota, perfis com acesso, mensagem de sucesso e erros, para fechar o cenário |
-| 23 | RF-012 | CT-CAM-42 | Confirmar como o rascunho deve aparecer ao gestor da entidade dona, pois a rota 13 só prevê os status ATIVA, ENCERRADA e DESATIVADA |
-| 24 | RF-013 | CT-CAM-48 e CT-CAM-49 | Desativar e reativar campanha não têm requisito correspondente no `requisitos.md`, pois o RF-013 cobre só o encerramento. Confirmar a qual requisito esses dois casos pertencem, já que a rota 17 os cita como RF15 e a numeração difere entre os documentos |
-| 25 | RF-013 | CT-CAM-50 e CT-CAM-62 | Confirmar se a rota 17 também retorna 401 sem token e 404 para campanha inexistente, e com quais mensagens, pois o documento não lista esses dois códigos nessa rota |
+| 21 | RF-012 | CT-CAM-35 a CT-CAM-42 | Divergência entre os documentos. O `requisitos.md` pede publicar campanha e tem o status rascunho, mas o `rotas-api.md` não tem rota de publicar nem esse status, e a campanha nasce ATIVA e visível. Confirmar se criar equivale a publicar ou se a rota e o status serão criados. Ver também as dúvidas 10, 22 e 23 |
+| 22 | RF-012 | CT-CAM-37 | Se a rota de publicação for criada, confirmar método, rota, perfis com acesso, mensagem de sucesso e erros, para fechar o cenário. Ver também a dúvida 21 |
+| 23 | RF-012 | CT-CAM-42 | Confirmar como o rascunho deve aparecer ao gestor da entidade dona, pois a rota 13 só prevê os status ATIVA, ENCERRADA e DESATIVADA. Ver também as dúvidas 10 e 21 |
+| 24 | RF-013 | CT-CAM-48 e CT-CAM-49 | Desativar e reativar campanha não têm requisito correspondente no `requisitos.md`, pois o RF-013 cobre só o encerramento. Confirmar a qual requisito esses dois casos pertencem, já que a rota 17 os cita como RF15 e a numeração difere entre os documentos. Ver também a dúvida 9 |
+| 25 | RF-013 | CT-CAM-50 e CT-CAM-62 | Confirmar se a rota 17 também retorna 401 sem token e 404 para campanha inexistente, e com quais mensagens, pois o documento não lista esses dois códigos nessa rota. Ver também as dúvidas 6 e 17 |
 | 26 | RF-013 | CT-CAM-54 e CT-CAM-55 | Confirmar a ordem das regras e as mensagens. A entidade dona que pede ATIVA para campanha DESATIVADA recebe 403 ou 409. A mensagem "Campanha desativada pelo administrador." vale para qual caso |
-| 27 | RF-014 | CT-CAM-65 | Divergência entre os documentos. O `requisitos.md` pede imagem na listagem, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme se o campo de imagem será incluído no objeto Campanha |
+| 27 | RF-014 | CT-CAM-65 | Divergência entre os documentos. O `requisitos.md` pede imagem na listagem, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme se o campo de imagem será incluído no objeto Campanha. Ver também a dúvida 30 |
 | 28 | RF-014 | CT-CAM-70 | Confirmar se a campanha com a data de encerramento vencida passa a ENCERRADA automaticamente ou continua ATIVA, pois o `rotas-api.md` só define ENCERRADA pela ação da entidade e calcula recebendoDoacoes pela data |
 | 29 | RF-014 | CT-CAM-73 e CT-CAM-74 | Confirmar se a rota 13 limita o limit a 50 quando vem um valor maior e se retorna 422 com a mensagem "Valor inválido." quando page ou limit não é número positivo, pois o documento não define |
-| 30 | RF-015 | CT-CAM-76 | Divergência entre os documentos. O `requisitos.md` pede imagens na página de detalhes, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme, junto com a dúvida 27 |
+| 30 | RF-015 | CT-CAM-76 | Divergência entre os documentos. O `requisitos.md` pede imagens na página de detalhes, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme. Ver também a dúvida 27 |
 | 31 | RF-015 | CT-CAM-81 | Confirmar como fica o percentualAtingido quando o valor arrecadado passa da meta, se limita a 100.00 ou mostra o valor real |
-| 32 | RF-015 | CT-CAM-87 | Confirmar se id fora do formato UUID retorna 404 com "Campanha não encontrada." na rota 14, como a rota 8 faz para entidades, pois o documento não define isso para campanhas |
+| 32 | RF-015 | CT-CAM-87 | Confirmar se id fora do formato UUID retorna 404 com "Campanha não encontrada." na rota 14, como a rota 8 faz para entidades, pois o documento não define isso para campanhas. Ver também a dúvida 8 |
+| 33 | RF-016 | CT-CAM-91 | Divergência entre os documentos. O `requisitos.md` pede busca por termo no título ou na descrição, mas a rota 13 busca só por trecho do título. Confirmar se a descrição entra na busca |
+| 34 | RF-016 | CT-CAM-89 e CT-CAM-93 | Confirmar se a busca ignora maiúsculas e minúsculas e se o parâmetro busca vazio devolve a lista completa, pois o documento não define |
+| 35 | RF-016 | CT-CAM-95 | Confirmar como a busca trata caracteres especiais e texto de injeção, pois o documento não define e o RNF-004 pede validação das entradas |
