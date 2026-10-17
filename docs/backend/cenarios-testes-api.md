@@ -1,4 +1,4 @@
-# Cenários de autenticação e permissões - DoaSync
+# Cenários de teste de API - DoaSync
 
 Relacionadas #S10 e #S11.
 
@@ -14,6 +14,14 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RF-002 | Autenticação | CT-AUT-17 a CT-AUT-26 |
 | RF-005 | Tipos de usuário e permissões | CT-PER-01 a CT-PER-06 |
 | RNF-003 | Autorização no servidor | CT-PER-07 a CT-PER-10 |
+| RF-010 | Criação de campanha | CT-CAM-01 a CT-CAM-19 |
+| RF-011 | Edição de campanha | CT-CAM-__ a __ |
+| RF-012 | Publicação de campanha | CT-CAM-__ a __ |
+| RF-013 | Encerramento de campanha | CT-CAM-__ a __ |
+| RF-014 | Listagem de campanhas disponíveis | CT-CAM-__ a __ |
+| RF-015 | Detalhes da campanha | CT-CAM-__ a __ |
+| RF-016 | Busca de campanhas | CT-CAM-__ a __ |
+| RF-017 | Filtros de campanhas | CT-CAM-__ a __ |
 
 ## Convenções
 
@@ -23,7 +31,8 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | 201 | Recurso criado |
 | 401 | Requisição sem identidade válida, por falta de token ou credenciais inválidas |
 | 403 | Usuário autenticado, mas sem permissão para a operação |
-| 409 | Dado único já cadastrado |
+| 404 | Recurso inexistente ou não visível para o usuário |
+| 409 | Dado único já cadastrado ou estado que não permite a operação |
 | 422 | Dado enviado inválido ou ausente |
 
 - Tipo indica se o cenário é de Sucesso ou de Erro.
@@ -95,7 +104,7 @@ Rotas cobertas. GET e PATCH /api/v1/usuarios/me, marcadas como RF05 no `rotas-ap
 | ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
 | --- | --- | --- | --- | --- |
 | CT-PER-01 | RF-005 | GET /api/v1/usuarios/me | Sucesso | Perfil do usuário autenticado. Retorna 200 com o objeto data do cadastro do doador |
-| CT-PER-02 | RF-005 | POST /api/v1/campanhas | Erro | Doador autenticado tenta criar uma campanha, que é uma operação de gestão. Retorna 403 (corpo da resposta a confirmar) |
+| CT-PER-02 | RF-005 | POST /api/v1/campanhas | Erro | Doador autenticado tenta criar uma campanha, que é uma operação de gestão. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." |
 | CT-PER-03 | RF-005 | PATCH /api/v1/usuarios/me | Sucesso | Perfil do usuário é atualizado. Retorna 200 com a mensagem "Perfil atualizado com sucesso." e o objeto data com os dados atualizados |
 | CT-PER-04 | RF-005 | PATCH /api/v1/usuarios/me | Erro | Atualização do perfil com o nome vazio. Retorna 422 com a mensagem "Nome não pode ser vazio." |
 | CT-PER-05 | RF-005 | PATCH /api/v1/usuarios/me | Erro | Atualização da senha com menos de 6 caracteres. Retorna 422 com a mensagem "Senha deve ter ao menos 6 caracteres." |
@@ -114,6 +123,34 @@ Regra de leitura dos códigos. 401 quando não há identidade válida. 403 quand
 | CT-PER-09 | RF-005, RNF-003 | PATCH /api/v1/entidades/{id} | Erro | Gestor autenticado tenta editar os dados de uma entidade que não é a dele. Retorna 403 (a confirmar se é 403 ou 404) |
 | CT-PER-10 | RF-005, RNF-003 | PATCH /api/v1/entidades/{id}/status | Erro | Gestor autenticado tenta alterar o status da própria entidade, operação restrita ao administrador. Retorna 403 (corpo da resposta a confirmar) |
 
+## RF-010 Criação de campanha
+
+Critério de aceitação. A campanha é salva com status "rascunho" e aparece no painel da entidade.
+
+Rotas cobertas. POST /api/v1/campanhas (acesso ENTIDADE com status APROVADA), marcada como RF11 no `rotas-api.md`. O cenário que verifica a campanha na lista da entidade usa GET /api/v1/campanhas apenas para consultar. A cobertura funcional da listagem fica nos cenários do RF-014 e do RF-017.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-01 | RF-010 | POST /api/v1/campanhas | Sucesso | Entidade aprovada cria campanha com título, descrição, meta e datas válidos. Retorna 201 com a mensagem "Campanha criada com sucesso." e os dados da campanha com valorArrecadado 0, percentualAtingido 0.00 e status ATIVA (a confirmar, o `requisitos.md` pede status "rascunho") |
+| CT-CAM-02 | RF-010 | POST /api/v1/campanhas | Sucesso | Entidade aprovada cria campanha sem enviar o identificador da entidade. Retorna 201 e a campanha vem vinculada à entidade do usuário autenticado |
+| CT-CAM-03 | RF-010 | POST /api/v1/campanhas e depois GET /api/v1/campanhas | Sucesso | Campanha criada aparece na lista da própria entidade. A criação retorna 201 e a consulta com o entidadeId da entidade dona retorna 200 com a campanha na lista (a confirmar, o documento não define uma rota de painel da entidade) |
+| CT-CAM-04 | RF-010 | POST /api/v1/campanhas | Sucesso | Criação com data de encerramento igual à data de início. Retorna 201, pois a regra aceita data igual ou posterior |
+| CT-CAM-05 | RF-010 | POST /api/v1/campanhas | Sucesso | Criação com data de início no passado e data de encerramento no futuro. Retorna 201 (a confirmar, o documento não define regra para a data de início no passado) |
+| CT-CAM-06 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem enviar token. Retorna 401 com a mensagem "Não autenticado." |
+| CT-CAM-07 | RF-010 | POST /api/v1/campanhas | Erro | Doador autenticado tenta criar campanha. Retorna 403 com a mensagem "Somente entidades podem criar campanhas." |
+| CT-CAM-08 | RF-010 | POST /api/v1/campanhas | Erro | Administrador autenticado tenta criar campanha. Retorna 403 (a confirmar a mensagem, o documento cita só entidades) |
+| CT-CAM-09 | RF-010 | POST /api/v1/campanhas | Erro | Entidade que ainda não foi aprovada, por exemplo com status PENDENTE, tenta criar campanha. Retorna 403 com a mensagem "Somente entidades aprovadas podem criar campanhas." |
+| CT-CAM-10 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem título. Retorna 422 com a mensagem "Título é obrigatório." |
+| CT-CAM-11 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem descrição. Retorna 422 com a mensagem "Descrição é obrigatória." |
+| CT-CAM-12 | RF-010 | POST /api/v1/campanhas | Erro | Criação com meta igual a zero. Retorna 422 com a mensagem "Meta deve ser maior que zero." |
+| CT-CAM-13 | RF-010 | POST /api/v1/campanhas | Erro | Criação com meta negativa. Retorna 422 com a mensagem "Meta deve ser maior que zero." |
+| CT-CAM-14 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem data de início. Retorna 422 com a mensagem "Data de início é obrigatória." |
+| CT-CAM-15 | RF-010 | POST /api/v1/campanhas | Erro | Criação sem data de encerramento. Retorna 422 com a mensagem "Data de encerramento é obrigatória." |
+| CT-CAM-16 | RF-010 | POST /api/v1/campanhas | Erro | Criação com data de encerramento anterior à data de início. Retorna 422 com a mensagem "Data de encerramento deve ser igual ou posterior à data de início." |
+| CT-CAM-17 | RF-010 | POST /api/v1/campanhas | Erro | Criação com data de encerramento no passado. Retorna 422 com a mensagem "Data de encerramento não pode estar no passado." |
+| CT-CAM-18 | RF-010 | POST /api/v1/campanhas | Erro | Criação com corpo vazio, sem nenhum campo. Retorna 422 com as mensagens de título, descrição, meta, data de início e data de encerramento (a confirmar se vêm juntas) |
+| CT-CAM-19 | RF-010 | POST /api/v1/campanhas | Erro | Criação com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
+
 ---
 
 ## Dúvidas para o Backend
@@ -126,6 +163,12 @@ Regra de leitura dos códigos. 401 quando não há identidade válida. 403 quand
 | 4 | RF-002 | CT-AUT-20 | Confirmar qual é o valor do campo tipo para o administrador |
 | 5 | RF-002 | CT-AUT-25 | Confirmar se, com e-mail e senha vazios, as duas mensagens vêm juntas na mesma resposta |
 | 6 | RNF-003 | CT-PER-07 e CT-PER-08 | Confirmar qual é o corpo da resposta 401 sem token e com token inválido, pois o documento só cita o código |
-| 7 | RF-005 | CT-PER-02, CT-PER-09 e CT-PER-10 | Confirmar qual é o corpo da resposta 403, pois o documento não define |
+| 7 | RF-005 | CT-PER-09 e CT-PER-10 | Confirmar qual é o corpo da resposta 403, pois o documento não define |
 | 8 | RF-005 | CT-PER-09 | Confirmar se o gestor que edita a entidade de outro recebe 403 ou 404 |
 | 9 | Geral | Todos | Confirmar a numeração dos requisitos, pois o `rotas-api.md` cita o login como RF03 e RF06 e o `requisitos.md` cita RF-002 |
+| 10 | RF-010 | CT-CAM-01 | Divergência entre os documentos. O `requisitos.md` pede status "rascunho" ao criar, mas o `rotas-api.md` cria a campanha como ATIVA. Confirmar qual vale |
+| 11 | RF-010 | CT-CAM-01 e CT-CAM-02 | Confirmar se o "objetivo" do `requisitos.md` corresponde ao campo metaValor e se a entidade beneficiada é sempre a do usuário autenticado, pois o `rotas-api.md` não recebe o identificador da entidade |
+| 12 | RF-010 | CT-CAM-03 | Confirmar qual rota alimenta o painel da entidade, pois o documento só tem a listagem pública com filtro por entidadeId |
+| 13 | RF-010 | CT-CAM-05 | Confirmar se a data de início no passado é aceita, pois o documento só define regra para a data de encerramento |
+| 14 | RF-010 | CT-CAM-08 | Confirmar qual é a mensagem do 403 quando o administrador tenta criar campanha, pois o documento cita só entidades |
+| 15 | RF-010 | CT-CAM-18 | Confirmar se, com o corpo vazio, todas as mensagens de campo vêm juntas na mesma resposta |
