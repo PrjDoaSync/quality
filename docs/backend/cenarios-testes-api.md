@@ -16,7 +16,7 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RNF-003 | Autorização no servidor | CT-PER-07 a CT-PER-10 |
 | RF-010 | Criação de campanha | CT-CAM-01 a CT-CAM-19 |
 | RF-011 | Edição de campanha | CT-CAM-20 a CT-CAM-34 |
-| RF-012 | Publicação de campanha | CT-CAM-__ a __ |
+| RF-012 | Publicação de campanha | CT-CAM-35 a CT-CAM-42 |
 | RF-013 | Encerramento de campanha | CT-CAM-__ a __ |
 | RF-014 | Listagem de campanhas disponíveis | CT-CAM-__ a __ |
 | RF-015 | Detalhes da campanha | CT-CAM-__ a __ |
@@ -175,6 +175,23 @@ Rota principal. PATCH /api/v1/campanhas/{id} (acesso entidade dona), marcada com
 | CT-CAM-33 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com data de encerramento anterior à data de início. Retorna 422 com a mensagem "Data de encerramento deve ser igual ou posterior à data de início." (a confirmar, sugestão pela mensagem da criação na rota 15) |
 | CT-CAM-34 | RF-011 | PATCH /api/v1/campanhas/{id} | Erro | Edição com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
 
+## RF-012 Publicação de campanha
+
+Critério de aceitação. Campanha publicada passa a constar na listagem pública. Campanha em rascunho não aparece.
+
+Rotas cobertas. O `rotas-api.md` não tem rota de publicar nem status "rascunho". A campanha nasce ATIVA na criação (POST /api/v1/campanhas) e a visibilidade pública é consultada em GET /api/v1/campanhas e GET /api/v1/campanhas/{id}, acesso público. Os cenários abaixo cobrem essa visibilidade e deixam marcado "a confirmar" o que depende da rota de publicação. A cobertura funcional da listagem fica nos cenários do RF-014.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-35 | RF-012 | GET /api/v1/campanhas | Sucesso | Visitante sem token lista campanhas e a campanha ATIVA, dentro do período e de entidade aprovada, consta na lista. Retorna 200 com a campanha (a confirmar, o documento não tem rota de publicar e a criação já deixa a campanha ATIVA) |
+| CT-CAM-36 | RF-012 | GET /api/v1/campanhas/{id} | Sucesso | Visitante sem token consulta o detalhe de campanha ATIVA de entidade aprovada. Retorna 200 com os dados da campanha |
+| CT-CAM-37 | RF-012 | (a confirmar) | Sucesso | Gestor publica uma campanha em rascunho. Retorna (a confirmar), pois o documento não define rota de publicação nem status rascunho |
+| CT-CAM-38 | RF-012 | GET /api/v1/campanhas | Erro | Visitante lista campanhas e a campanha DESATIVADA não consta na lista. Retorna 200 sem a campanha |
+| CT-CAM-39 | RF-012 | GET /api/v1/campanhas | Erro | Visitante lista campanhas e a campanha ENCERRADA não consta na lista. Retorna 200 sem a campanha |
+| CT-CAM-40 | RF-012 | GET /api/v1/campanhas/{id} | Erro | Visitante consulta o detalhe de campanha DESATIVADA. Retorna 404 com a mensagem "Campanha não encontrada." |
+| CT-CAM-41 | RF-012 | GET /api/v1/campanhas/{id} | Erro | Visitante consulta o detalhe de campanha de entidade não aprovada. Retorna 404 com a mensagem "Campanha não encontrada." |
+| CT-CAM-42 | RF-012 | GET /api/v1/campanhas | Erro | Campanha em rascunho não consta na lista pública. Retorna 200 sem a campanha (a confirmar, o status rascunho não existe no documento) |
+
 ---
 
 ## Dúvidas para o Backend
@@ -201,3 +218,6 @@ Rota principal. PATCH /api/v1/campanhas/{id} (acesso entidade dona), marcada com
 | 18 | RF-011 | CT-CAM-25 | Confirmar se a entidade que edita a campanha de outra recebe 403 ou 404 |
 | 19 | RF-011 | CT-CAM-26 | Confirmar se o administrador pode editar campanha, pois o acesso da rota é só da entidade dona |
 | 20 | RF-011 | CT-CAM-31 a CT-CAM-33 | Confirmar se as mensagens 422 de descrição vazia, meta inválida e datas inconsistentes na edição são as sugeridas nos cenários, pois a rota 16 só mostra a do título |
+| 21 | RF-012 | CT-CAM-35 a CT-CAM-42 | Divergência entre os documentos. O `requisitos.md` pede publicar campanha e tem o status rascunho, mas o `rotas-api.md` não tem rota de publicar nem esse status, e a campanha nasce ATIVA e visível. Confirmar se criar equivale a publicar ou se a rota e o status serão criados |
+| 22 | RF-012 | CT-CAM-37 | Se a rota de publicação for criada, confirmar método, rota, perfis com acesso, mensagem de sucesso e erros, para fechar o cenário |
+| 23 | RF-012 | CT-CAM-42 | Confirmar como o rascunho deve aparecer ao gestor da entidade dona, pois a rota 13 só prevê os status ATIVA, ENCERRADA e DESATIVADA |
