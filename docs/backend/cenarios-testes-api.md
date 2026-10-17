@@ -18,7 +18,7 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RF-011 | Edição de campanha | CT-CAM-20 a CT-CAM-34 |
 | RF-012 | Publicação de campanha | CT-CAM-35 a CT-CAM-42 |
 | RF-013 | Encerramento de campanha | CT-CAM-43 a CT-CAM-63 |
-| RF-014 | Listagem de campanhas disponíveis | CT-CAM-__ a __ |
+| RF-014 | Listagem de campanhas disponíveis | CT-CAM-64 a CT-CAM-74 |
 | RF-015 | Detalhes da campanha | CT-CAM-__ a __ |
 | RF-016 | Busca de campanhas | CT-CAM-__ a __ |
 | RF-017 | Filtros de campanhas | CT-CAM-__ a __ |
@@ -222,6 +222,26 @@ Rota principal. PATCH /api/v1/campanhas/{id}/status (acesso entidade dona, somen
 | CT-CAM-62 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração de status de campanha que não existe. Retorna 404 com a mensagem "Campanha não encontrada." (a confirmar) |
 | CT-CAM-63 | RF-013 | PATCH /api/v1/campanhas/{id}/status | Erro | Alteração de status com JSON malformado. Retorna 400 com a mensagem "Corpo da requisição inválido." |
 
+## RF-014 Listagem de campanhas disponíveis
+
+Critério de aceitação. A listagem mostra apenas campanhas publicadas e não encerradas, com título, entidade e imagem.
+
+Rota principal. GET /api/v1/campanhas (acesso público, token opcional), marcada como RF12 e RF14 no `rotas-api.md`. Busca e filtros ficam nos cenários do RF-016 e do RF-017.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-64 | RF-014 | GET /api/v1/campanhas | Sucesso | Visitante sem token lista as campanhas. Retorna 200 com a lista data e o objeto meta com total, page, limit e totalPages, contendo só campanhas recebendo doações |
+| CT-CAM-65 | RF-014 | GET /api/v1/campanhas | Sucesso | Cada item da lista traz título, entidade com id, razão social e nome fantasia, e o progresso com percentualAtingido. Retorna 200 (a confirmar a imagem, o objeto Campanha não tem campo de imagem) |
+| CT-CAM-66 | RF-014 | GET /api/v1/campanhas | Sucesso | Doador autenticado lista as campanhas. Retorna 200 com a mesma lista que o visitante vê |
+| CT-CAM-67 | RF-014 | GET /api/v1/campanhas | Sucesso | Listagem sem informar page e limit. Retorna 200 com meta page 1 e limit 10 |
+| CT-CAM-68 | RF-014 | GET /api/v1/campanhas | Sucesso | Listagem com page 2 e limit 5. Retorna 200 com no máximo 5 campanhas e meta com page 2 e limit 5 |
+| CT-CAM-69 | RF-014 | GET /api/v1/campanhas | Sucesso | Listagem quando não há campanha recebendo doações. Retorna 200 com data vazio e meta total 0 |
+| CT-CAM-70 | RF-014 | GET /api/v1/campanhas | Erro | Campanha com a data de encerramento já vencida não consta na lista. Retorna 200 sem a campanha (a confirmar se o status dela é ATIVA ou ENCERRADA) |
+| CT-CAM-71 | RF-014 | GET /api/v1/campanhas | Erro | Campanha ATIVA com a data de início no futuro não consta na lista. Retorna 200 sem a campanha |
+| CT-CAM-72 | RF-014 | GET /api/v1/campanhas | Erro | Campanha ATIVA de entidade que não está APROVADA não consta na lista. Retorna 200 sem a campanha |
+| CT-CAM-73 | RF-014 | GET /api/v1/campanhas | Erro | Listagem com limit acima de 50. Retorna 200 com no máximo 50 campanhas por página |
+| CT-CAM-74 | RF-014 | GET /api/v1/campanhas | Erro | Listagem com page ou limit que não é número positivo. Retorna 422 com a mensagem "Valor inválido." (a confirmar) |
+
 ---
 
 ## Dúvidas para o Backend
@@ -254,3 +274,6 @@ Rota principal. PATCH /api/v1/campanhas/{id}/status (acesso entidade dona, somen
 | 24 | RF-013 | CT-CAM-48 e CT-CAM-49 | Desativar e reativar campanha não têm requisito correspondente no `requisitos.md`, pois o RF-013 cobre só o encerramento. Confirmar a qual requisito esses dois casos pertencem, já que a rota 17 os cita como RF15 e a numeração difere entre os documentos |
 | 25 | RF-013 | CT-CAM-50 e CT-CAM-62 | Confirmar se a rota 17 também retorna 401 sem token e 404 para campanha inexistente, e com quais mensagens, pois o documento não lista esses dois códigos nessa rota |
 | 26 | RF-013 | CT-CAM-54 e CT-CAM-55 | Confirmar a ordem das regras e as mensagens. A entidade dona que pede ATIVA para campanha DESATIVADA recebe 403 ou 409. A mensagem "Campanha desativada pelo administrador." vale para qual caso |
+| 27 | RF-014 | CT-CAM-65 | Divergência entre os documentos. O `requisitos.md` pede imagem na listagem, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme se o campo de imagem será incluído no objeto Campanha |
+| 28 | RF-014 | CT-CAM-70 | Confirmar se a campanha com a data de encerramento vencida passa a ENCERRADA automaticamente ou continua ATIVA, pois o `rotas-api.md` só define ENCERRADA pela ação da entidade e calcula recebendoDoacoes pela data |
+| 29 | RF-014 | CT-CAM-73 e CT-CAM-74 | Confirmar se a rota 13 limita o limit a 50 quando vem um valor maior e se retorna 422 com a mensagem "Valor inválido." quando page ou limit não é número positivo, pois o documento não define |
