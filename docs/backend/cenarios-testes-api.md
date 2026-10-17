@@ -43,10 +43,13 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 
 | Perfil | Usado em |
 | --- | --- |
-| Doador pessoa física e pessoa jurídica | CT-AUT-01 a CT-AUT-05, CT-AUT-18, CT-PER-01 a CT-PER-06 |
+| Doador pessoa física e pessoa jurídica | CT-AUT-01 a CT-AUT-05, CT-AUT-18, CT-PER-01 a CT-PER-06, CT-CAM-07, CT-CAM-24, CT-CAM-45, CT-CAM-51, CT-CAM-66, CT-CAM-77, CT-CAM-105 |
 | Gestor com entidade vinculada | CT-AUT-19, CT-PER-10 |
-| Dois gestores, cada um com a sua entidade | CT-PER-09 |
-| Administrador | CT-AUT-20 |
+| Gestor de entidade APROVADA, dono de campanhas | CT-CAM-01 a CT-CAM-05, CT-CAM-10 a CT-CAM-22, CT-CAM-27 a CT-CAM-34, CT-CAM-43 a CT-CAM-45, CT-CAM-53 a CT-CAM-56, CT-CAM-82, CT-CAM-98 a CT-CAM-100, CT-CAM-107 |
+| Dois gestores, cada um com a sua entidade | CT-PER-09, CT-CAM-25, CT-CAM-52, CT-CAM-86, CT-CAM-106 |
+| Gestor de entidade que não está APROVADA, por exemplo PENDENTE | CT-CAM-09, CT-CAM-41, CT-CAM-72, CT-CAM-84 |
+| Administrador | CT-AUT-20, CT-CAM-08, CT-CAM-26, CT-CAM-46 a CT-CAM-49, CT-CAM-57 a CT-CAM-63, CT-CAM-83, CT-CAM-84, CT-CAM-101, CT-CAM-102, CT-CAM-108 |
+| Visitante sem conta e sem token | CT-CAM-06, CT-CAM-23, CT-CAM-35 a CT-CAM-42, CT-CAM-50, CT-CAM-64, CT-CAM-65, CT-CAM-67 a CT-CAM-76, CT-CAM-78 a CT-CAM-81, CT-CAM-85, CT-CAM-87 a CT-CAM-97, CT-CAM-103, CT-CAM-104, CT-CAM-109 |
 | Usuário inativo | CT-AUT-26 |
 
 ---
