@@ -21,7 +21,7 @@ Os critérios de aceitação vêm do `requisitos.md`. Rotas, campos, códigos e 
 | RF-014 | Listagem de campanhas disponíveis | CT-CAM-64 a CT-CAM-74 |
 | RF-015 | Detalhes da campanha | CT-CAM-75 a CT-CAM-87 |
 | RF-016 | Busca de campanhas | CT-CAM-88 a CT-CAM-95 |
-| RF-017 | Filtros de campanhas | CT-CAM-__ a __ |
+| RF-017 | Filtros de campanhas | CT-CAM-96 a CT-CAM-109 |
 
 ## Convenções
 
@@ -281,6 +281,29 @@ Rota principal. GET /api/v1/campanhas com o parâmetro busca (acesso público, t
 | CT-CAM-94 | RF-016 | GET /api/v1/campanhas?busca={trecho} | Erro | Campanha DESATIVADA ou ENCERRADA com o trecho no título não consta no resultado da busca do visitante. Retorna 200 sem a campanha |
 | CT-CAM-95 | RF-016 | GET /api/v1/campanhas?busca={termo} | Erro | Busca com caracteres especiais e texto de injeção, por exemplo uma aspa seguida de comando SQL. Retorna 200 sem erro e sem alterar dados (a confirmar) |
 
+## RF-017 Filtros de campanhas
+
+Critério de aceitação. Ao aplicar um filtro, apenas as campanhas que atendem ao critério são exibidas.
+
+Rota principal. GET /api/v1/campanhas com os parâmetros entidadeId e status (acesso público, token opcional), marcada como RF12 e RF14 no `rotas-api.md`. O filtro de status só vale para o administrador ou para a entidade dona, com o próprio entidadeId. Para os demais o filtro é ignorado e só aparecem campanhas recebendo doações.
+
+| ID | Requisito de origem | Endpoint previsto | Tipo | Resultado esperado com código HTTP |
+| --- | --- | --- | --- | --- |
+| CT-CAM-96 | RF-017 | GET /api/v1/campanhas?entidadeId={id} | Sucesso | Visitante filtra por entidade. Retorna 200 só com campanhas dessa entidade que estão recebendo doações |
+| CT-CAM-97 | RF-017 | GET /api/v1/campanhas?entidadeId={id} | Sucesso | Filtro por entidade que não tem campanhas. Retorna 200 com data vazio e meta total 0 |
+| CT-CAM-98 | RF-017 | GET /api/v1/campanhas?entidadeId={id}&status=ENCERRADA | Sucesso | Entidade dona filtra as próprias campanhas por status ENCERRADA. Retorna 200 só com as campanhas ENCERRADAS dela |
+| CT-CAM-99 | RF-017 | GET /api/v1/campanhas?entidadeId={id}&status=DESATIVADA | Sucesso | Entidade dona filtra as próprias campanhas por status DESATIVADA. Retorna 200 só com as campanhas DESATIVADAS dela |
+| CT-CAM-100 | RF-017 | GET /api/v1/campanhas?entidadeId={id}&status=ATIVA | Sucesso | Entidade dona filtra as próprias campanhas por status ATIVA. Retorna 200 só com as campanhas ATIVAS dela (a confirmar se inclui as que estão fora do período) |
+| CT-CAM-101 | RF-017 | GET /api/v1/campanhas?status=ENCERRADA | Sucesso | Administrador filtra por status ENCERRADA sem informar a entidade. Retorna 200 com as campanhas ENCERRADAS de todas as entidades |
+| CT-CAM-102 | RF-017 | GET /api/v1/campanhas?entidadeId={id}&status=DESATIVADA | Sucesso | Administrador filtra por entidade e por status DESATIVADA. Retorna 200 só com as campanhas DESATIVADAS dessa entidade |
+| CT-CAM-103 | RF-017 | GET /api/v1/campanhas?entidadeId={id}&busca={trecho} | Sucesso | Filtro por entidade combinado com busca. Retorna 200 só com campanhas da entidade cujo título contém o trecho |
+| CT-CAM-104 | RF-017 | GET /api/v1/campanhas?status=ENCERRADA | Erro | Visitante envia o filtro de status. O filtro é ignorado e retorna 200 só com campanhas recebendo doações |
+| CT-CAM-105 | RF-017 | GET /api/v1/campanhas?status=DESATIVADA | Erro | Doador autenticado envia o filtro de status. O filtro é ignorado e retorna 200 só com campanhas recebendo doações |
+| CT-CAM-106 | RF-017 | GET /api/v1/campanhas?entidadeId={id de outra entidade}&status=ENCERRADA | Erro | Entidade envia o filtro de status com o entidadeId de outra entidade. O filtro é ignorado e retorna 200 só com campanhas recebendo doações dessa outra entidade |
+| CT-CAM-107 | RF-017 | GET /api/v1/campanhas?status=ENCERRADA | Erro | Entidade envia o filtro de status sem informar o entidadeId. Retorna 200 (a confirmar se o Backend assume a entidade do token e aplica o filtro ou se ignora o filtro) |
+| CT-CAM-108 | RF-017 | GET /api/v1/campanhas?status={valor inválido} | Erro | Administrador envia status fora de ATIVA, ENCERRADA e DESATIVADA. Retorna 422 com a mensagem "Status inválido. Use: ATIVA, ENCERRADA, DESATIVADA" (a confirmar) |
+| CT-CAM-109 | RF-017 | GET /api/v1/campanhas?entidadeId={valor fora do formato UUID} | Erro | Filtro por entidadeId fora do formato UUID. Retorna 422 (a confirmar, o documento não define) |
+
 ---
 
 ## Dúvidas para o Backend
@@ -314,11 +337,15 @@ Rota principal. GET /api/v1/campanhas com o parâmetro busca (acesso público, t
 | 25 | RF-013 | CT-CAM-50 e CT-CAM-62 | Confirmar se a rota 17 também retorna 401 sem token e 404 para campanha inexistente, e com quais mensagens, pois o documento não lista esses dois códigos nessa rota. Ver também as dúvidas 6 e 17 |
 | 26 | RF-013 | CT-CAM-54 e CT-CAM-55 | Confirmar a ordem das regras e as mensagens. A entidade dona que pede ATIVA para campanha DESATIVADA recebe 403 ou 409. A mensagem "Campanha desativada pelo administrador." vale para qual caso |
 | 27 | RF-014 | CT-CAM-65 | Divergência entre os documentos. O `requisitos.md` pede imagem na listagem, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme se o campo de imagem será incluído no objeto Campanha. Ver também a dúvida 30 |
-| 28 | RF-014 | CT-CAM-70 | Confirmar se a campanha com a data de encerramento vencida passa a ENCERRADA automaticamente ou continua ATIVA, pois o `rotas-api.md` só define ENCERRADA pela ação da entidade e calcula recebendoDoacoes pela data |
-| 29 | RF-014 | CT-CAM-73 e CT-CAM-74 | Confirmar se a rota 13 limita o limit a 50 quando vem um valor maior e se retorna 422 com a mensagem "Valor inválido." quando page ou limit não é número positivo, pois o documento não define |
+| 28 | RF-014 | CT-CAM-70 | Confirmar se a campanha com a data de encerramento vencida passa a ENCERRADA automaticamente ou continua ATIVA, pois o `rotas-api.md` só define ENCERRADA pela ação da entidade e calcula recebendoDoacoes pela data. Ver também a dúvida 38 |
+| 29 | RF-014 | CT-CAM-73 e CT-CAM-74 | Confirmar se a rota 13 limita o limit a 50 quando vem um valor maior e se retorna 422 com a mensagem "Valor inválido." quando page ou limit não é número positivo, pois o documento não define. Ver também a dúvida 39 |
 | 30 | RF-015 | CT-CAM-76 | Divergência entre os documentos. O `requisitos.md` pede imagens na página de detalhes, mas o objeto Campanha do `rotas-api.md` não tem campo de imagem. Pedir ao Backend que confirme. Ver também a dúvida 27 |
 | 31 | RF-015 | CT-CAM-81 | Confirmar como fica o percentualAtingido quando o valor arrecadado passa da meta, se limita a 100.00 ou mostra o valor real |
-| 32 | RF-015 | CT-CAM-87 | Confirmar se id fora do formato UUID retorna 404 com "Campanha não encontrada." na rota 14, como a rota 8 faz para entidades, pois o documento não define isso para campanhas. Ver também a dúvida 8 |
+| 32 | RF-015 | CT-CAM-87 | Confirmar se id fora do formato UUID retorna 404 com "Campanha não encontrada." na rota 14, como a rota 8 faz para entidades, pois o documento não define isso para campanhas. Ver também as dúvidas 8 e 39 |
 | 33 | RF-016 | CT-CAM-91 | Divergência entre os documentos. O `requisitos.md` pede busca por termo no título ou na descrição, mas a rota 13 busca só por trecho do título. Confirmar se a descrição entra na busca |
 | 34 | RF-016 | CT-CAM-89 e CT-CAM-93 | Confirmar se a busca ignora maiúsculas e minúsculas e se o parâmetro busca vazio devolve a lista completa, pois o documento não define |
 | 35 | RF-016 | CT-CAM-95 | Confirmar como a busca trata caracteres especiais e texto de injeção, pois o documento não define e o RNF-004 pede validação das entradas |
+| 36 | RF-017 | CT-CAM-104 e CT-CAM-105 | Divergência entre os documentos. O `requisitos.md` lista visitante e doador como atores do filtro por entidade e por status, mas a rota 13 só aplica o filtro de status ao administrador e à entidade dona, e ignora para os demais. Confirmar se visitante e doador devem poder filtrar por status. Ver também a dúvida 37 |
+| 37 | RF-017 | CT-CAM-107 | Confirmar se, quando a entidade dona envia o filtro de status sem o entidadeId, o Backend assume a entidade do token e aplica o filtro, pois a rota 13 cita "o próprio entidadeId" sem dizer se ele é obtido do token. Ver também a dúvida 36 |
+| 38 | RF-017 | CT-CAM-100 | Confirmar se o filtro status ATIVA mostra também a campanha ATIVA fora do período, pois a lista pública mostra só as que estão recebendo doações. Ver também a dúvida 28 |
+| 39 | RF-017 | CT-CAM-108 e CT-CAM-109 | Confirmar se status inválido retorna o 422 "Status inválido. Use: ATIVA, ENCERRADA, DESATIVADA", como na rota 17, e se entidadeId fora do formato UUID retorna 422 ou é ignorado na rota 13, pois o documento não define. Ver também as dúvidas 29 e 32 |
