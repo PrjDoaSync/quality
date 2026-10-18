@@ -1,10 +1,10 @@
 # Relatório de testes de API do DoaSync (S10 e S11)
 
-04/10/2026
+04/10/2026 (atualizado em 18/10/2026)
 
 ## Contexto e objetivo
 
-Este relatório registra o trabalho feito para entregar as issues S10 e S11 da Sprint 2 (QA no Shift-Left) na terça-feira, 6 de outubro de 2026. O resultado é uma coleção no Postman com um mock local e um projeto RestAssured que já roda contra esse mock e só precisa trocar o endereço quando a API real existir.
+Este relatório registra o trabalho feito para entregar as issues S10 e S11 da Sprint 2 (QA no Shift-Left) na terça-feira, 6 de outubro de 2026. O resultado é uma coleção no Postman com um mock na nuvem e um projeto RestAssured que já roda contra esse mock e só precisa trocar o endereço quando a API real existir.
 
 **Issues atendidas**
 
@@ -108,17 +108,15 @@ id,categoria,total
 2,Educação,14379.75
 ```
 
-## Mock server local
+## Mock server
 
-Como nenhuma API existe ainda, os testes rodam contra o mock nativo do Postman, o que a própria issue S11 prevê. O mock **DoaSync Mock** foi criado a partir da coleção e roda no computador do autor em `http://localhost:3001`, e é esse o valor da variável `baseUrl`.
+Como nenhuma API existe ainda, os testes rodam contra um mock do Postman, o que a própria issue S11 prevê. O mock **DoaSync Mock** foi criado a partir da coleção com a opção Deploy mock server e roda na nuvem do Postman, em `https://44b6b107-644e-4eea-b0a6-572f9f6f7045.mock.pstmn.io`. Esse endereço é o valor padrão da variável `baseUrl` no `BaseTest`.
 
-A página do mock no Postman abre pelo link [DoaSync Mock no Postman](https://amos-simoes123-7124459.postman.co/workspace/Projeto-de-Exten%25C3%25A7%25C3%25A3o---Doasync~938b90c7-0d98-476e-921c-1faf8da4ff9e/mock/01a1087b-ec34-7559-a928-2c4c2b7ec6d8), com o mesmo requisito de acesso. O endereço que os testes chamam continua sendo o local, e o link só abre a página do mock dentro do Postman.
-
-- O código gerado pelo Postman mostra a porta 4500 como padrão, mas o servidor sobe na 3001, que é a porta exibida no topo da aba do mock.
-- O mock só responde enquanto o Postman está aberto e o mock está ligado (botão Start). Os testes precisam dele ativo.
-- Rota desconhecida devolve 404 com a mensagem "Endpoint not defined". Endpoint sem exemplo salvo devolve uma resposta genérica ("Hi from postman mock").
-- A aba **Logs** do mock lista cada chamada recebida com o caminho exato, e foi a principal ferramenta de diagnóstico do trabalho.
-- A opção de atualizar o mock automaticamente foi marcada, mas ao salvar exemplos novos o mock continuou com a versão antiga. Foi preciso recriar o mock uma vez e reiniciá-lo com Stop e Start outra vez. A causa não foi confirmada.
+- O mock é público, porque a opção "Make mock server private" ficou desmarcada. Por isso os testes não precisam enviar o header `x-api-key`. Os dados são fictícios.
+- Por rodar na nuvem, o mock não depende do Postman aberto nem do botão Start.
+- O mock recusa POST com corpo vazio ou enviado como formulário, e responde 400 com a mensagem "Request body has invalid format.". Por isso o teste do exportar envia `{}` como JSON.
+- O mock anterior, local na porta 3001, deixou de iniciar com a mensagem "No source available to run this mock locally yet.". Foi criado um novo a partir da coleção. A causa não foi confirmada.
+- Antes de criar um mock, é preciso salvar todos os exemplos (Ctrl+S). Num mock anterior, a opção de atualizar automaticamente foi marcada, mas ao salvar exemplos novos o mock continuou com a versão antiga, e foi preciso recriá-lo. A causa não foi confirmada.
 
 ## Projeto RestAssured
 
@@ -153,7 +151,7 @@ public class BaseTest {
 
     @BeforeAll
     static void configurar() {
-        RestAssured.baseURI = System.getProperty("baseUrl", "http://localhost:3001");
+        RestAssured.baseURI = System.getProperty("baseUrl", "https://44b6b107-644e-4eea-b0a6-572f9f6f7045.mock.pstmn.io");
     }
 }
 ```
@@ -185,11 +183,11 @@ void deveRetornar200ComJson() {
 }
 ```
 
-O teste do relatório devolve arquivo, então a conferência é feita no header e não em campos de JSON. A versão correta usa `post`, confere `statusCode(200)` e compara o content-type com a string `"text/csv"`.
+O teste do relatório devolve arquivo, então a conferência é feita no header e não em campos de JSON. A versão correta usa `post`, envia um corpo JSON vazio (`{}`) com `ContentType.JSON`, confere `statusCode(200)` e compara o content-type com a string `"text/csv"`. O corpo é necessário porque o mock recusa POST sem corpo com 400.
 
 ## Problemas encontrados e lições
 
-Seis problemas apareceram no caminho, e a maioria veio de detalhes de configuração e não de lógica dos testes.
+Oito problemas apareceram no caminho, e a maioria veio de detalhes de configuração e não de lógica dos testes.
 
 | Problema | Causa | Como foi resolvido |
 | --- | --- | --- |
@@ -199,6 +197,8 @@ Seis problemas apareceram no caminho, e a maioria veio de detalhes de configura�
 | O teste do KPIs recebeu 404 | O caminho foi digitado como `/api.;v1/...` em vez de `/api/v1/...` | A aba Logs do mock mostrou o caminho exato que chegou, e a barra foi corrigida |
 | O teste do Relatório passou com JSON, mas o endpoint devolve texto | O teste usava GET em uma rota POST, o 404 do mock vem em JSON e o teste não conferia o status | Trocar para `post`, conferir `statusCode(200)` e usar `"text/csv"`, já que `ContentType.TEXT` significa text/plain |
 | O projeto nasceu em Java 26 | O IntelliJ escolheu o JDK mais novo disponível | Baixar o JDK 21 e alinhar SDK, language level e `pom.xml` |
+| O mock local não iniciava (18/10) | O Postman respondeu "No source available to run this mock locally yet." ao clicar em Start | Criar um novo mock a partir da coleção com a opção Deploy mock server, que roda na nuvem, e usar o novo endereço como padrão do `BaseTest` |
+| O teste do Relatório recebeu 400 no mock novo | O RestAssured envia o POST como formulário com corpo vazio, e o mock recusa isso | Enviar `.contentType(ContentType.JSON).body("{}")` no teste |
 
 **O que fica de aprendizado**
 
@@ -214,12 +214,12 @@ A parte técnica das duas issues está montada, mas o critério de aceite da S10
 | --- | --- | --- | --- |
 | S10 | Mapear os endpoints que alimentam cada tela | Parcial | Só os endpoints da US-01, tirados da issue #53 |
 | S10 | Revisar campos obrigatórios, tipos e status HTTP | Pendente | Depende do Backend, hoje há só exemplos fictícios |
-| S10 | Montar a coleção no Postman | Feita | Coleção DoaSync API com mock local |
+| S10 | Montar a coleção no Postman | Feita | Coleção DoaSync API com mock na nuvem |
 | S10 | Registrar os contratos revisados no repositório | Pendente | Este relatório e a coleção exportada podem ser anexados |
 | S11 | Estruturar pastas e configuração base | Feita | Projeto Maven com pacotes `config` e `dashboard` |
 | S11 | Escrever os primeiros scripts de teste | Parcial | Conferem status e content-type, ainda sem payload |
 | S11 | Manter a URL base parametrizada | Feita | Propriedade `baseUrl` com o mock como padrão |
-| S11 | Documentar como executar a suíte | Pendente | Falta o README |
+| S11 | Documentar como executar a suíte | Feita | README em `docs/backend/doasync-api-tests` |
 
 Critérios de aceite. O da S10 pede contratos revisados em conjunto com o Backend, o que não aconteceu porque o time está travado. O da S11 pede o projeto estruturado e os primeiros scripts prontos para rodar contra a API quando ela existir, o que está atendido para os endpoints da US-01.
 
@@ -229,8 +229,8 @@ O que falta para fechar a entrega de terça-feira é pequeno e está todo sob co
 
 **Para a entrega**
 
-- [ ] Escrever um README curto com como ligar o mock, como rodar a suíte e como apontar para outra URL.
-- [ ] Validar a execução pela linha de comando com `mvn test -DbaseUrl=<endereço>`. Até aqui os testes foram rodados apenas pelo IntelliJ, e essa forma ainda não foi testada.
+- [x] Escrever um README curto com como rodar a suíte e como apontar para outra URL.
+- [x] Validar a execução pela linha de comando com `mvn test`. Foi feita com o Maven que vem no IntelliJ, porque o `mvn` não está no PATH, e os 4 testes passaram.
 - [ ] Registrar no repositório os contratos previstos, marcando o que é suposição como "a confirmar com o Backend".
 
 **Depende do Backend**
