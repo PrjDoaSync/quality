@@ -10,9 +10,11 @@ public class DashboardRelatorioTest extends BaseTest{
     @Test
     void deveRetornar200ComTexto(){
         given()
-                .when()
-                    .post("/api/v1/relatorios/exportar")
-                .then()
+                .contentType(ContentType.JSON)
+                .body("{}")
+            .when()
+                .post("/api/v1/relatorios/exportar")
+            .then()
                 .statusCode(200)
                 .contentType("text/csv");
     }
