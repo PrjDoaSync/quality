@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "DoaSync - Campanhas (Testes Básicos)",
+    "description": "Testes básicos de caminho feliz para os endpoints públicos de Campanhas do DoaSync (Equipe 2). Cada request valida status 200 e o formato do envelope de resposta. Use a variável baseUrl para apontar ao servidor (padrão http://localhost:8080).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "campanhaId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Healthcheck",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "health"]
+        },
+        "description": "Verifica se a API está no ar. Disponível na branch Node (T03-05)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Status do servico e UP', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.status).to.eql('UP');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar campanhas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campanhas",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "campanhas"]
+        },
+        "description": "Listagem pública de campanhas. Salva o id do primeiro item para o teste de detalhe."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Envelope com data (array) e meta', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.data).to.be.an('array');",
+              "    pm.expect(body.meta).to.be.an('object');",
+              "    pm.expect(body.meta).to.have.property('total');",
+              "});",
+              "var body = pm.response.json();",
+              "if (body.data && body.data.length > 0) {",
+              "    pm.collectionVariables.set('campanhaId', body.data[0].id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar campanhas - com filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campanhas?page=1&limit=10&status=ATIVA&busca=",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "campanhas"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "10" },
+            { "key": "status", "value": "ATIVA" },
+            { "key": "busca", "value": "" }
+          ]
+        },
+        "description": "Listagem com paginacao e filtros basicos (page, limit, status, busca)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Meta reflete a pagina solicitada', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.meta.page).to.eql(1);",
+              "    pm.expect(body.meta.limit).to.eql(10);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Detalhar campanha por id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campanhas/{{campanhaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "campanhas", "{{campanhaId}}"]
+        },
+        "description": "Detalhe de uma campanha. Usa o id capturado na listagem. Rode 'Listar campanhas' antes."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Retorna data com o mesmo id', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.data).to.be.an('object');",
+              "    pm.expect(body.data.id).to.eql(pm.collectionVariables.get('campanhaId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar campanhas - alias sem prefixo",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/campanhas",
+          "host": ["{{baseUrl}}"],
+          "path": ["campanhas"]
+        },
+        "description": "Alias de compatibilidade sem o prefixo /api/v1."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Envelope com data (array)', function () {",
+              "    var body = pm.response.json();",
+              "    pm.expect(body.data).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
