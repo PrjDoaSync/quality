@@ -26,6 +26,11 @@ public final class Endpoints {
     public static final String DOACOES = V1 + "/doacoes";
     public static final String ENTIDADES = V1 + "/entidades";
 
+    // Healthcheck e alias sem prefixo /api/v1 (compatibilidade, CAM-T04)
+    public static final String HEALTH = V1 + "/health";
+    public static final String CAMPANHAS_ALIAS = "/campanhas";
+    public static final String HEALTH_ALIAS = "/health";
+
     public static String campanhaPorId(String id) {
         return CAMPANHAS + "/" + id;
     }
